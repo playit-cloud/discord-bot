@@ -7,9 +7,10 @@ use serenity::builder::*;
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 
-use crate::logging::LogHelpers;
+use crate::utils::logging::LogHelpers;
 use crate::consts::*;
 use crate::utils::epoch_ms;
+use crate::utils::rw_save::RwSave;
 
 #[derive(Serialize, Deserialize)]
 pub enum IncidentStatus {
@@ -42,7 +43,7 @@ enum StatusVote {
 }
 
 pub struct ActiveIncidentHandler {
-    active: RwLock<Option<ActiveIncident>>,
+    active: RwSave<Option<ActiveIncident>>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -64,15 +65,13 @@ struct ActiveIncident {
     counts: [u64; 4],
 }
 
-impl Default for ActiveIncidentHandler {
-    fn default() -> Self {
+impl ActiveIncidentHandler {
+    pub async fn new(file_path: impl ToString) -> Self {
         ActiveIncidentHandler {
-            active: RwLock::new(None),
+            active: RwSave::new(file_path.to_string(), || None).await,
         }
     }
-}
 
-impl ActiveIncidentHandler {
     pub fn get_commands(&self) -> Vec<CreateCommand> {
         let report_downtime = CreateCommand::new("report-downtime")
             .description("Report downtime on playit.gg. Make sure you're not the only one having issues before reporting!");
@@ -165,7 +164,8 @@ impl ActiveIncidentHandler {
         if user_level == UserLevel::Plain {
             let _ = interaction.create_response(
                 ctx.http(),
-                CreateInteractionResponse::Message(CreateInteractionResponseMessage::new().content("Link your discord account on https://playit.gg/account/settings/account. If the website is down :/, try to get someone with a linked account to make the report."))
+                CreateInteractionResponse::Message(CreateInteractionResponseMessage::new()
+                    .content("Link your discord account on https://playit.gg/account/settings/account. If the website is down :/, try to get someone with a linked account to make the report."))
             ).await;
 
             return true;

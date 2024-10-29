@@ -4,7 +4,6 @@ use serenity::model::prelude::*;
 use serenity::prelude::*;
 use serenity::async_trait;
 
-mod logging;
 mod active_incident;
 mod consts;
 mod utils;
@@ -41,7 +40,7 @@ async fn main() {
 
     let token = dotenv::var("DISCORD_TOKEN").expect("Expected a token in the environment");
     let handler = Handler {
-        active_incident: Default::default(),
+        active_incident: ActiveIncidentHandler::new("./active-incident.json").await,
     };
 
     let mut client = Client::builder(token, GatewayIntents::empty())
