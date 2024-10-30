@@ -50,6 +50,7 @@ pub struct ActiveIncidentHandler {
 struct ActiveIncident {
     message_id: MessageId,
     message_url: String,
+
     initial_user: UserId,
     status: IncidentStatus,
     last_message_update: u64,

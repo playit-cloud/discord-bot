@@ -7,6 +7,7 @@ use serenity::async_trait;
 mod active_incident;
 mod consts;
 mod utils;
+mod thirdparty;
 
 struct Handler {
     active_incident: ActiveIncidentHandler,
